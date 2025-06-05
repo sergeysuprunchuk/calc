@@ -40,6 +40,11 @@ const (
 	errTyp
 	eofTyp
 	numTyp
+	plusTyp
+	minusTyp
+	mulTyp
+	slashTyp
+	powerTyp
 )
 
 type token struct {
@@ -65,6 +70,7 @@ func (t *tokenizer) read() token {
 
 	for _, r := range []reader{
 		t.readNum,
+		t.readOperator,
 	} {
 		tok := r()
 		if tok.typ != emptyTyp {
@@ -112,4 +118,30 @@ func (t *tokenizer) readNum() token {
 	}
 
 	return token{numTyp, val.String()}
+}
+
+func (t *tokenizer) readOperator() token {
+	var tok token
+
+	switch t.char() {
+	case '+':
+		tok.typ = plusTyp
+	case '-':
+		tok.typ = minusTyp
+	case '*':
+		if t.nextChar() == '*' {
+			t.next()
+			tok.typ = powerTyp
+			break
+		}
+		tok.typ = mulTyp
+	case '/':
+		tok.typ = slashTyp
+	default:
+		return token{typ: emptyTyp}
+	}
+
+	t.next()
+
+	return tok
 }
