@@ -83,6 +83,11 @@ func Test_readOperator(t *testing.T) {
 		tr("	+", token{typ: emptyTyp}, 0),
 		tr("32+", token{typ: emptyTyp}, 0),
 		tr("*+*", token{typ: mulTyp}, 1),
+		tr("(", token{typ: lParenTyp}, 1),
+		tr(")", token{typ: rParenTyp}, 1),
+		tr("()", token{typ: lParenTyp}, 1),
+		tr(")(", token{typ: rParenTyp}, 1),
+		tr("((", token{typ: lParenTyp}, 1),
 	}
 
 	for _, test := range tests {
@@ -167,6 +172,35 @@ func Test_read(t *testing.T) {
 				{token{errTyp, "неизвестный символ ."}, 2},
 				{token{errTyp, "неизвестный символ ."}, 2},
 				{token{errTyp, "неизвестный символ ."}, 2},
+			},
+		},
+		{
+			tok: getTok("16.32 + (-.32 * 6)"),
+			expected: []item{
+				{token{numTyp, "16.32"}, 5},
+				{token{typ: plusTyp}, 7},
+				{token{typ: lParenTyp}, 9},
+				{token{typ: minusTyp}, 10},
+				{token{numTyp, "0.32"}, 13},
+				{token{typ: mulTyp}, 15},
+				{token{numTyp, "6"}, 17},
+				{token{typ: rParenTyp}, 18},
+			},
+		},
+		{
+			tok: getTok("-(16.32 + (-.32 * 6))"),
+			expected: []item{
+				{token{typ: minusTyp}, 1},
+				{token{typ: lParenTyp}, 2},
+				{token{numTyp, "16.32"}, 7},
+				{token{typ: plusTyp}, 9},
+				{token{typ: lParenTyp}, 11},
+				{token{typ: minusTyp}, 12},
+				{token{numTyp, "0.32"}, 15},
+				{token{typ: mulTyp}, 17},
+				{token{numTyp, "6"}, 19},
+				{token{typ: rParenTyp}, 20},
+				{token{typ: rParenTyp}, 21},
 			},
 		},
 	}

@@ -45,6 +45,8 @@ const (
 	mulTyp
 	slashTyp
 	powerTyp
+	lParenTyp
+	rParenTyp
 )
 
 type token struct {
@@ -137,6 +139,10 @@ func (t *tokenizer) readOperator() token {
 		tok.typ = mulTyp
 	case '/':
 		tok.typ = slashTyp
+	case '(':
+		tok.typ = lParenTyp
+	case ')':
+		tok.typ = rParenTyp
 	default:
 		return token{typ: emptyTyp}
 	}
