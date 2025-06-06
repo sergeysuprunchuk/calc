@@ -4,8 +4,6 @@ import (
 	"testing"
 )
 
-func getTok(data string) *tokenizer { return &tokenizer{data: []rune(data)} }
-
 type testRow struct {
 	tok      *tokenizer
 	expected token
@@ -14,7 +12,7 @@ type testRow struct {
 
 func tr(data string, expected token, cursor int) testRow {
 	return testRow{
-		tok:      getTok(data),
+		tok:      newTokenizer(data),
 		expected: expected,
 		cursor:   cursor,
 	}
@@ -106,7 +104,7 @@ func Test_read(t *testing.T) {
 		expected []item
 	}{
 		{
-			tok: getTok("16.32 + -.32"),
+			tok: newTokenizer("16.32 + -.32"),
 			expected: []item{
 				{token{numTyp, "16.32"}, 5},
 				{token{typ: plusTyp}, 7},
@@ -115,7 +113,7 @@ func Test_read(t *testing.T) {
 			},
 		},
 		{
-			tok: getTok("16.32 + -.32**2"),
+			tok: newTokenizer("16.32 + -.32**2"),
 			expected: []item{
 				{token{numTyp, "16.32"}, 5},
 				{token{typ: plusTyp}, 7},
@@ -126,7 +124,7 @@ func Test_read(t *testing.T) {
 			},
 		},
 		{
-			tok: getTok("16.32 + -.32**-2.001"),
+			tok: newTokenizer("16.32 + -.32**-2.001"),
 			expected: []item{
 				{token{numTyp, "16.32"}, 5},
 				{token{typ: plusTyp}, 7},
@@ -138,7 +136,7 @@ func Test_read(t *testing.T) {
 			},
 		},
 		{
-			tok: getTok("-0.032*-2.001"),
+			tok: newTokenizer("-0.032*-2.001"),
 			expected: []item{
 				{token{typ: minusTyp}, 1},
 				{token{numTyp, "0.032"}, 6},
@@ -148,7 +146,7 @@ func Test_read(t *testing.T) {
 			},
 		},
 		{
-			tok: getTok("	16.32 	+ -	.32	"),
+			tok: newTokenizer("	16.32 	+ -	.32	"),
 			expected: []item{
 				{token{numTyp, "16.32"}, 6},
 				{token{typ: plusTyp}, 9},
@@ -158,7 +156,7 @@ func Test_read(t *testing.T) {
 			},
 		},
 		{
-			tok: getTok(""),
+			tok: newTokenizer(""),
 			expected: []item{
 				{token{typ: eofTyp}, 0},
 				{token{typ: eofTyp}, 0},
@@ -166,7 +164,7 @@ func Test_read(t *testing.T) {
 			},
 		},
 		{
-			tok: getTok("32.	0"),
+			tok: newTokenizer("32.	0"),
 			expected: []item{
 				{token{numTyp, "32"}, 2},
 				{token{errTyp, "неизвестный символ ."}, 2},
@@ -175,7 +173,7 @@ func Test_read(t *testing.T) {
 			},
 		},
 		{
-			tok: getTok("16.32 + (-.32 * 6)"),
+			tok: newTokenizer("16.32 + (-.32 * 6)"),
 			expected: []item{
 				{token{numTyp, "16.32"}, 5},
 				{token{typ: plusTyp}, 7},
@@ -188,7 +186,7 @@ func Test_read(t *testing.T) {
 			},
 		},
 		{
-			tok: getTok("-(16.32 + (-.32 * 6))"),
+			tok: newTokenizer("-(16.32 + (-.32 * 6))"),
 			expected: []item{
 				{token{typ: minusTyp}, 1},
 				{token{typ: lParenTyp}, 2},
@@ -207,7 +205,11 @@ func Test_read(t *testing.T) {
 
 	for _, test := range tests {
 		for index, i := range test.expected {
-			got := test.tok.read()
+			got := test.tok.nextTok()
+
+			if got != test.tok.currentTok() {
+				t.Errorf("%d: test.tok.tok %v != got %v", index, test.tok.tok, got)
+			}
 
 			if got != i.tok {
 				t.Errorf("%d: tok: expected %v, got %v", index, i.tok, got)

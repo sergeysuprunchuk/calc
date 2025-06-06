@@ -8,6 +8,11 @@ import (
 type tokenizer struct {
 	data   []rune
 	cursor int
+	tok    token //последний прочитанный токен
+}
+
+func newTokenizer(data string) *tokenizer {
+	return &tokenizer{data: []rune(data)}
 }
 
 func (t *tokenizer) char() rune {
@@ -63,7 +68,9 @@ type token struct {
 type reader func() token
 
 // считывает один токен, каждый вызов возвращает новый токен!
-func (t *tokenizer) read() token {
+func (t *tokenizer) nextTok() (tok token) {
+	defer func() { t.tok = tok }()
+
 	t.skipSpace()
 
 	if t.char() == 0 {
@@ -151,3 +158,5 @@ func (t *tokenizer) readOperator() token {
 
 	return tok
 }
+
+func (t *tokenizer) currentTok() token { return t.tok }
