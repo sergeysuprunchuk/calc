@@ -1,0 +1,99 @@
+package calc
+
+import (
+	"errors"
+	"reflect"
+	"testing"
+)
+
+func Test_parse(t *testing.T) {
+	tests := []struct {
+		data     string
+		expected node
+	}{
+		{
+			data: "16	 +32",
+			expected: &binaryNode{
+				op:    addOp,
+				left:  &numNode{16.},
+				right: &numNode{32.},
+			},
+		},
+		{
+			data: "16*64	 + 		32",
+			expected: &binaryNode{
+				op: addOp,
+				left: &binaryNode{
+					op:    mulOp,
+					left:  &numNode{16.},
+					right: &numNode{64.},
+				},
+				right: &numNode{32.},
+			},
+		},
+		{
+			data: "16 ** 32 	** 64	",
+			expected: &binaryNode{
+				op: powOp,
+				left: &binaryNode{
+					op:    powOp,
+					left:  &numNode{16.},
+					right: &numNode{32.},
+				},
+				right: &numNode{64.},
+			},
+		},
+		{
+			data: "(		16 + 64	) *	 32",
+			expected: &binaryNode{
+				op: mulOp,
+				left: &binaryNode{
+					op:    addOp,
+					left:  &numNode{16.},
+					right: &numNode{64.},
+				},
+				right: &numNode{32.},
+			},
+		},
+		{
+			data: "	16 + 64	 * 32  **	 64 - 16 / 64	 ",
+			expected: &binaryNode{
+				op: subOp,
+				left: &binaryNode{
+					op:   addOp,
+					left: &numNode{16.},
+					right: &binaryNode{
+						op:   mulOp,
+						left: &numNode{64.},
+						right: &binaryNode{
+							op:    powOp,
+							left:  &numNode{32.},
+							right: &numNode{64.},
+						},
+					},
+				},
+				right: &binaryNode{
+					op:    divOp,
+					left:  &numNode{16.},
+					right: &numNode{64.},
+				},
+			},
+		},
+		{
+			data:     "16 ++ 32",
+			expected: &errNode{errors.New("ожидалось число | '(' | '-'")},
+		},
+		{
+			data:     "32 * (16 + 64",
+			expected: &errNode{errors.New("ожидалось ')'")},
+		},
+		{data: "", expected: nil},
+	}
+
+	for _, test := range tests {
+		n := newParser(test.data).parse()
+		if !reflect.DeepEqual(n, test.expected) {
+			t.Errorf("parse(%q): got %#v, want %#v", test.data, n, test.expected)
+		}
+	}
+}
