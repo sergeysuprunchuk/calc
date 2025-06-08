@@ -11,36 +11,6 @@ func newParser(data string) *parser {
 	return &parser{tok: newTokenizer(data)}
 }
 
-const (
-	addOp uint8 = iota + 1
-	subOp
-	mulOp
-	divOp
-	powOp
-)
-
-type node interface{}
-
-type numNode struct{ val float64 }
-
-type unaryNode struct {
-	op  uint8
-	val node
-}
-
-type binaryNode struct {
-	op    uint8
-	left  node
-	right node
-}
-
-type errNode struct{ err error }
-
-func isErr(n node) bool {
-	_, ok := n.(*errNode)
-	return ok
-}
-
 /*
 чем больше число в конце, тем ниже приоритет (parse0 > parse1),
 разбор начинается с большего числа.
@@ -51,11 +21,12 @@ type parse func() node
 
 func (p *parser) parse() node {
 	p.tok.nextTok()
+
 	if p.tok.currentTok().typ == eofTyp {
 		return nil
 	}
 
-	n := p.parse3()
+	n := p.parse4()
 	if isErr(n) {
 		return n
 	}
@@ -82,7 +53,7 @@ func (p *parser) parse0() node {
 	if tok.typ == lParenTyp {
 		p.tok.nextTok()
 		//parse с самым низким приоритетом
-		n := p.parse3()
+		n := p.parse4()
 		if isErr(n) {
 			return n
 		}
@@ -92,20 +63,12 @@ func (p *parser) parse0() node {
 		}
 
 		p.tok.nextTok()
+
 		return n
 	}
 
-	if tok.typ == minusTyp {
-		p.tok.nextTok()
-		val := p.parse0()
-		if isErr(val) {
-			return val
-		}
-		return &unaryNode{subOp, val}
-	}
-
 	return &errNode{
-		errors.New("ожидалось число | '(' | '-'"),
+		errors.New("ожидалось число | '('"),
 	}
 }
 
@@ -115,12 +78,14 @@ func (p *parser) parse1() node {
 		return n
 	}
 
-	for tok := p.tok.currentTok(); tok.typ == powerTyp; tok = p.tok.currentTok() {
+	if p.tok.currentTok().typ == powerTyp {
 		p.tok.nextTok()
-		right := p.parse0()
+
+		right := p.parse1()
 		if isErr(right) {
 			return right
 		}
+
 		n = &binaryNode{powOp, n, right}
 	}
 
@@ -128,15 +93,32 @@ func (p *parser) parse1() node {
 }
 
 func (p *parser) parse2() node {
-	n := p.parse1()
+	if p.tok.currentTok().typ == minusTyp {
+		p.tok.nextTok()
+
+		val := p.parse1()
+		if isErr(val) {
+			return val
+		}
+
+		return &unaryNode{subOp, val}
+	}
+
+	return p.parse1()
+}
+
+func (p *parser) parse3() node {
+	n := p.parse2()
 	if isErr(n) {
 		return n
 	}
 
-	for tok := p.tok.currentTok(); tok.typ == mulTyp || tok.typ == slashTyp; tok = p.tok.currentTok() {
+	for tok := p.tok.currentTok(); tok.typ == mulTyp ||
+		tok.typ == slashTyp; tok = p.tok.currentTok() {
+
 		p.tok.nextTok()
 
-		right := p.parse1()
+		right := p.parse2()
 		if isErr(right) {
 			return right
 		}
@@ -152,16 +134,18 @@ func (p *parser) parse2() node {
 	return n
 }
 
-func (p *parser) parse3() node {
-	n := p.parse2()
+func (p *parser) parse4() node {
+	n := p.parse3()
 	if isErr(n) {
 		return n
 	}
 
-	for tok := p.tok.currentTok(); tok.typ == plusTyp || tok.typ == minusTyp; tok = p.tok.currentTok() {
+	for tok := p.tok.currentTok(); tok.typ == plusTyp ||
+		tok.typ == minusTyp; tok = p.tok.currentTok() {
+
 		p.tok.nextTok()
 
-		right := p.parse2()
+		right := p.parse3()
 		if isErr(right) {
 			return right
 		}

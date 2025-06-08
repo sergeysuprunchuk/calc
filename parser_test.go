@@ -35,12 +35,12 @@ func Test_parse(t *testing.T) {
 			data: "16 ** 32 	** 64	",
 			expected: &binaryNode{
 				op: powOp,
-				left: &binaryNode{
+				right: &binaryNode{
 					op:    powOp,
-					left:  &numNode{16.},
-					right: &numNode{32.},
+					left:  &numNode{32.},
+					right: &numNode{64.},
 				},
-				right: &numNode{64.},
+				left: &numNode{16.},
 			},
 		},
 		{
@@ -81,7 +81,7 @@ func Test_parse(t *testing.T) {
 		},
 		{
 			data:     "16 ++ 32",
-			expected: &errNode{errors.New("ожидалось число | '(' | '-'")},
+			expected: &errNode{errors.New("ожидалось число | '('")},
 		},
 		{
 			data:     "32 * (16 + 64",
