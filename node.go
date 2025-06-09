@@ -25,6 +25,8 @@ const (
 	lessEqOp
 	moreOp
 	moreEqOp
+	andOp
+	orOp
 )
 
 type unaryNode struct {
@@ -118,6 +120,18 @@ func (n *binaryNode) exec(ctx context.Context) any {
 		default:
 			return errors.New("")
 		}
+
+	case andOp:
+		if _, ok := left.(bool); !ok {
+			return errors.New("")
+		}
+		return left.(bool) && right.(bool)
+
+	case orOp:
+		if _, ok := left.(bool); !ok {
+			return errors.New("")
+		}
+		return left.(bool) || right.(bool)
 	}
 
 	if n.op == addOp {

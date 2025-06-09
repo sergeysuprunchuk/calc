@@ -105,6 +105,12 @@ func Test_readOperator(t *testing.T) {
 		tr("<<<", token{typ: lessTyp}, 1),
 		tr("<<==", token{typ: lessTyp}, 1),
 		tr("=", token{typ: emptyTyp}, 0),
+		tr("&&", token{typ: andTyp}, 2),
+		tr("||", token{typ: orTyp}, 2),
+		tr("&&||", token{typ: andTyp}, 2),
+		tr("||&&", token{typ: orTyp}, 2),
+		tr("&&&&", token{typ: andTyp}, 2),
+		tr("||||", token{typ: orTyp}, 2),
 	}
 
 	for _, test := range tests {

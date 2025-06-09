@@ -58,6 +58,8 @@ const (
 	lessTyp
 	moreEqTyp
 	lessEqTyp
+	andTyp
+	orTyp
 )
 
 type token struct {
@@ -170,6 +172,22 @@ func (t *tokenizer) readOperator() token {
 		}
 		t.next()
 		return token{typ: moreEqTyp}
+
+	case '&':
+		if t.nextChar() != '&' {
+			return token{typ: emptyTyp}
+		}
+		t.next()
+		t.next()
+		return token{typ: andTyp}
+
+	case '|':
+		if t.nextChar() != '|' {
+			return token{typ: emptyTyp}
+		}
+		t.next()
+		t.next()
+		return token{typ: orTyp}
 
 	case '+':
 		tok.typ = plusTyp

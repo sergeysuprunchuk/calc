@@ -26,7 +26,8 @@ func (p *parser) parse() node {
 		return nil
 	}
 
-	n := p.parse5()
+	//parse с самым низким приоритетом
+	n := p.parse7()
 	if isErr(n) {
 		return n
 	}
@@ -53,7 +54,7 @@ func (p *parser) parse0() node {
 	if tok.typ == lParenTyp {
 		p.tok.nextTok()
 		//parse с самым низким приоритетом
-		n := p.parse5()
+		n := p.parse7()
 		if isErr(n) {
 			return n
 		}
@@ -198,6 +199,48 @@ func (p *parser) parse5() node {
 		}
 
 		n = &binaryNode{typ, n, right}
+	}
+
+	return n
+}
+
+func (p *parser) parse6() node {
+	n := p.parse5()
+	if isErr(n) {
+		return n
+	}
+
+	for tok := p.tok.currentTok(); tok.typ == andTyp; tok = p.tok.currentTok() {
+
+		p.tok.nextTok()
+
+		right := p.parse5()
+		if isErr(right) {
+			return right
+		}
+
+		n = &binaryNode{andOp, n, right}
+	}
+
+	return n
+}
+
+func (p *parser) parse7() node {
+	n := p.parse6()
+	if isErr(n) {
+		return n
+	}
+
+	for tok := p.tok.currentTok(); tok.typ == orTyp; tok = p.tok.currentTok() {
+
+		p.tok.nextTok()
+
+		right := p.parse6()
+		if isErr(right) {
+			return right
+		}
+
+		n = &binaryNode{orOp, n, right}
 	}
 
 	return n

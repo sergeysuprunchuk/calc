@@ -164,6 +164,38 @@ func Test_parse(t *testing.T) {
 				},
 			},
 		},
+		{
+			data: "16	 <	32	&&	 16	!=		32",
+			expected: &binaryNode{
+				op: andOp,
+				left: &binaryNode{
+					op:    lessOp,
+					left:  &numNode{16.},
+					right: &numNode{32.},
+				},
+				right: &binaryNode{
+					op:    notEqOp,
+					left:  &numNode{16.},
+					right: &numNode{32.},
+				},
+			},
+		},
+		{
+			data: "16	 <	32	||	 16	!=		32",
+			expected: &binaryNode{
+				op: orOp,
+				left: &binaryNode{
+					op:    lessOp,
+					left:  &numNode{16.},
+					right: &numNode{32.},
+				},
+				right: &binaryNode{
+					op:    notEqOp,
+					left:  &numNode{16.},
+					right: &numNode{32.},
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
