@@ -51,6 +51,12 @@ func Test_readNum(t *testing.T) {
 		tr("*", token{typ: emptyTyp}, 0),
 		tr("**", token{typ: emptyTyp}, 0),
 		tr("/", token{typ: emptyTyp}, 0),
+		tr("==", token{typ: emptyTyp}, 0),
+		tr("!=", token{typ: emptyTyp}, 0),
+		tr(">", token{typ: emptyTyp}, 0),
+		tr(">=", token{typ: emptyTyp}, 0),
+		tr("<", token{typ: emptyTyp}, 0),
+		tr("<=", token{typ: emptyTyp}, 0),
 	}
 
 	for _, test := range tests {
@@ -86,6 +92,19 @@ func Test_readOperator(t *testing.T) {
 		tr("()", token{typ: lParenTyp}, 1),
 		tr(")(", token{typ: rParenTyp}, 1),
 		tr("((", token{typ: lParenTyp}, 1),
+		tr("==", token{typ: eqTyp}, 2),
+		tr("!=", token{typ: notEqTyp}, 2),
+		tr(">", token{typ: moreTyp}, 1),
+		tr(">=", token{typ: moreEqTyp}, 2),
+		tr("<", token{typ: lessTyp}, 1),
+		tr("<=", token{typ: lessEqTyp}, 2),
+		tr("===", token{typ: eqTyp}, 2),
+		tr("!==", token{typ: notEqTyp}, 2),
+		tr(">>", token{typ: moreTyp}, 1),
+		tr(">=>=", token{typ: moreEqTyp}, 2),
+		tr("<<<", token{typ: lessTyp}, 1),
+		tr("<<==", token{typ: lessTyp}, 1),
+		tr("=", token{typ: emptyTyp}, 0),
 	}
 
 	for _, test := range tests {
@@ -199,6 +218,54 @@ func Test_read(t *testing.T) {
 				{token{numTyp, "6"}, 19},
 				{token{typ: rParenTyp}, 20},
 				{token{typ: rParenTyp}, 21},
+			},
+		},
+		{
+			tok: newTokenizer("16.32 == .32"),
+			expected: []item{
+				{token{numTyp, "16.32"}, 5},
+				{token{typ: eqTyp}, 8},
+				{token{numTyp, "0.32"}, 12},
+			},
+		},
+		{
+			tok: newTokenizer("16.32 != .32"),
+			expected: []item{
+				{token{numTyp, "16.32"}, 5},
+				{token{typ: notEqTyp}, 8},
+				{token{numTyp, "0.32"}, 12},
+			},
+		},
+		{
+			tok: newTokenizer("16.32 >= .32"),
+			expected: []item{
+				{token{numTyp, "16.32"}, 5},
+				{token{typ: moreEqTyp}, 8},
+				{token{numTyp, "0.32"}, 12},
+			},
+		},
+		{
+			tok: newTokenizer("16.32 <= .32"),
+			expected: []item{
+				{token{numTyp, "16.32"}, 5},
+				{token{typ: lessEqTyp}, 8},
+				{token{numTyp, "0.32"}, 12},
+			},
+		},
+		{
+			tok: newTokenizer("16.32 > .32"),
+			expected: []item{
+				{token{numTyp, "16.32"}, 5},
+				{token{typ: moreTyp}, 7},
+				{token{numTyp, "0.32"}, 11},
+			},
+		},
+		{
+			tok: newTokenizer("16.32 < .32"),
+			expected: []item{
+				{token{numTyp, "16.32"}, 5},
+				{token{typ: lessTyp}, 7},
+				{token{numTyp, "0.32"}, 11},
 			},
 		},
 	}

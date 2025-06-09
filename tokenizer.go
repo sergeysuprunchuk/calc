@@ -52,6 +52,12 @@ const (
 	powerTyp
 	lParenTyp
 	rParenTyp
+	eqTyp
+	notEqTyp
+	moreTyp
+	lessTyp
+	moreEqTyp
+	lessEqTyp
 )
 
 type token struct {
@@ -133,6 +139,38 @@ func (t *tokenizer) readOperator() token {
 	var tok token
 
 	switch t.char() {
+	case '=':
+		if t.nextChar() != '=' {
+			return token{typ: emptyTyp}
+		}
+		t.next()
+		t.next()
+		return token{typ: eqTyp}
+
+	case '!':
+		if t.nextChar() != '=' {
+			return token{typ: emptyTyp}
+		}
+		t.next()
+		t.next()
+		return token{typ: notEqTyp}
+
+	case '<':
+		t.next()
+		if t.char() != '=' {
+			return token{typ: lessTyp}
+		}
+		t.next()
+		return token{typ: lessEqTyp}
+
+	case '>':
+		t.next()
+		if t.char() != '=' {
+			return token{typ: moreTyp}
+		}
+		t.next()
+		return token{typ: moreEqTyp}
+
 	case '+':
 		tok.typ = plusTyp
 	case '-':

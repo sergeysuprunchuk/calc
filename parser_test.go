@@ -88,6 +88,82 @@ func Test_parse(t *testing.T) {
 			expected: &errNode{errors.New("ожидалось ')'")},
 		},
 		{data: "", expected: nil},
+		{
+			data: "16	 ==	32",
+			expected: &binaryNode{
+				op:    eqOp,
+				left:  &numNode{16.},
+				right: &numNode{32.},
+			},
+		},
+		{
+			data: "	16	 !=	32",
+			expected: &binaryNode{
+				op:    notEqOp,
+				left:  &numNode{16.},
+				right: &numNode{32.},
+			},
+		},
+		{
+			data: "16	 <=	32		",
+			expected: &binaryNode{
+				op:    lessEqOp,
+				left:  &numNode{16.},
+				right: &numNode{32.},
+			},
+		},
+		{
+			data: "16	 >= 	32",
+			expected: &binaryNode{
+				op:    moreEqOp,
+				left:  &numNode{16.},
+				right: &numNode{32.},
+			},
+		},
+		{
+			data: " 16		 >	32 ",
+			expected: &binaryNode{
+				op:    moreOp,
+				left:  &numNode{16.},
+				right: &numNode{32.},
+			},
+		},
+		{
+			data: "16	 <	32	",
+			expected: &binaryNode{
+				op:    lessOp,
+				left:  &numNode{16.},
+				right: &numNode{32.},
+			},
+		},
+		{
+			data: "16+	16 ==	32",
+			expected: &binaryNode{
+				op: eqOp,
+				left: &binaryNode{
+					op:    addOp,
+					left:  &numNode{16.},
+					right: &numNode{16.},
+				},
+				right: &numNode{32.},
+			},
+		},
+		{
+			data: "16+	16 !=	32+16",
+			expected: &binaryNode{
+				op: notEqOp,
+				left: &binaryNode{
+					op:    addOp,
+					left:  &numNode{16.},
+					right: &numNode{16.},
+				},
+				right: &binaryNode{
+					op:    addOp,
+					left:  &numNode{32.},
+					right: &numNode{16.},
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {

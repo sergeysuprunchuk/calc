@@ -89,6 +89,54 @@ func Test_node(t *testing.T) {
 			},
 			expected: 65551.75,
 		},
+		{
+			expected: false,
+			n: &binaryNode{
+				op:    eqOp,
+				left:  &numNode{16.},
+				right: &numNode{32.},
+			},
+		},
+		{
+			expected: true,
+			n: &binaryNode{
+				op:    notEqOp,
+				left:  &numNode{16.},
+				right: &numNode{32.},
+			},
+		},
+		{
+			expected: true,
+			n: &binaryNode{
+				op:    lessEqOp,
+				left:  &numNode{16.},
+				right: &numNode{32.},
+			},
+		},
+		{
+			expected: false,
+			n: &binaryNode{
+				op:    moreEqOp,
+				left:  &numNode{16.},
+				right: &numNode{32.},
+			},
+		},
+		{
+			expected: false,
+			n: &binaryNode{
+				op:    moreOp,
+				left:  &numNode{16.},
+				right: &numNode{32.},
+			},
+		},
+		{
+			expected: true,
+			n: &binaryNode{
+				op:    lessOp,
+				left:  &numNode{16.},
+				right: &numNode{32.},
+			},
+		},
 	}
 
 	for _, test := range tests {

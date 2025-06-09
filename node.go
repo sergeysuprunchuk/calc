@@ -19,6 +19,12 @@ const (
 	mulOp
 	divOp
 	powOp
+	eqOp
+	notEqOp
+	lessOp
+	lessEqOp
+	moreOp
+	moreEqOp
 )
 
 type unaryNode struct {
@@ -63,6 +69,55 @@ func (n *binaryNode) exec(ctx context.Context) any {
 
 	if reflect.TypeOf(left) != reflect.TypeOf(right) {
 		return errors.New("")
+	}
+
+	switch n.op {
+	case eqOp:
+		switch left.(type) {
+		case float64:
+			return left.(float64) == right.(float64)
+		case bool:
+			return left.(bool) == right.(bool)
+		default:
+			return errors.New("")
+		}
+	case notEqOp:
+		switch left.(type) {
+		case float64:
+			return left.(float64) != right.(float64)
+		case bool:
+			return left.(bool) != right.(bool)
+		default:
+			return errors.New("")
+		}
+	case lessOp:
+		switch left.(type) {
+		case float64:
+			return left.(float64) < right.(float64)
+		default:
+			return errors.New("")
+		}
+	case lessEqOp:
+		switch left.(type) {
+		case float64:
+			return left.(float64) <= right.(float64)
+		default:
+			return errors.New("")
+		}
+	case moreOp:
+		switch left.(type) {
+		case float64:
+			return left.(float64) > right.(float64)
+		default:
+			return errors.New("")
+		}
+	case moreEqOp:
+		switch left.(type) {
+		case float64:
+			return left.(float64) >= right.(float64)
+		default:
+			return errors.New("")
+		}
 	}
 
 	if n.op == addOp {
