@@ -60,6 +60,8 @@ const (
 	lessEqTyp
 	andTyp
 	orTyp
+	questionTyp
+	colonTyp
 )
 
 type token struct {
@@ -141,6 +143,13 @@ func (t *tokenizer) readOperator() token {
 	var tok token
 
 	switch t.char() {
+	case '?':
+		t.next()
+		return token{typ: questionTyp}
+	case ':':
+		t.next()
+		return token{typ: colonTyp}
+
 	case '=':
 		if t.nextChar() != '=' {
 			return token{typ: emptyTyp}

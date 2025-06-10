@@ -169,3 +169,25 @@ func isErr(n node) bool {
 	_, ok := n.(*errNode)
 	return ok
 }
+
+type ternaryNode struct {
+	cond    node
+	ifTrue  node
+	ifFalse node
+}
+
+func (n *ternaryNode) exec(ctx context.Context) any {
+	cond := n.cond.exec(ctx)
+	if _, ok := cond.(error); ok {
+		return cond
+	}
+
+	if _, ok := cond.(bool); !ok {
+		return errors.New("")
+	}
+
+	if cond.(bool) {
+		return n.ifTrue.exec(ctx)
+	}
+	return n.ifFalse.exec(ctx)
+}

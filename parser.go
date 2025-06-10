@@ -27,7 +27,7 @@ func (p *parser) parse() node {
 	}
 
 	//parse с самым низким приоритетом
-	n := p.parse7()
+	n := p.parse8()
 	if isErr(n) {
 		return n
 	}
@@ -54,7 +54,7 @@ func (p *parser) parse0() node {
 	if tok.typ == lParenTyp {
 		p.tok.nextTok()
 		//parse с самым низким приоритетом
-		n := p.parse7()
+		n := p.parse8()
 		if isErr(n) {
 			return n
 		}
@@ -244,4 +244,34 @@ func (p *parser) parse7() node {
 	}
 
 	return n
+}
+
+func (p *parser) parse8() node {
+	cond := p.parse7()
+	if isErr(cond) {
+		return cond
+	}
+
+	if p.tok.currentTok().typ == questionTyp {
+		p.tok.nextTok()
+		ifTrue := p.parse8()
+		if isErr(ifTrue) {
+			return ifTrue
+		}
+
+		if p.tok.currentTok().typ != colonTyp {
+			return &errNode{errors.New("expected colon token")}
+		}
+
+		p.tok.nextTok()
+
+		ifFalse := p.parse8()
+		if isErr(ifFalse) {
+			return ifFalse
+		}
+
+		return &ternaryNode{cond, ifTrue, ifFalse}
+	}
+
+	return cond
 }
