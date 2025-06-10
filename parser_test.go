@@ -12,6 +12,10 @@ func Test_parse(t *testing.T) {
 		expected node
 	}{
 		{
+			data:     "16",
+			expected: &numNode{16.},
+		},
+		{
 			data: "16	 +32",
 			expected: &binaryNode{
 				op:    addOp,
@@ -195,6 +199,22 @@ func Test_parse(t *testing.T) {
 					right: &numNode{32.},
 				},
 			},
+		},
+		{
+			data:     `'привет мир'`,
+			expected: &strNode{`привет мир`},
+		},
+		{
+			data:     `"привет мир"`,
+			expected: &strNode{`привет мир`},
+		},
+		{
+			data:     `"привет ' мир"`,
+			expected: &strNode{`привет ' мир`},
+		},
+		{
+			data:     `'привет " мир'`,
+			expected: &strNode{`привет " мир`},
 		},
 	}
 

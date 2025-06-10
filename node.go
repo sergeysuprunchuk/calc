@@ -138,6 +138,8 @@ func (n *binaryNode) exec(ctx context.Context) any {
 		switch left := left.(type) {
 		case float64:
 			return left + right.(float64)
+		case string:
+			return left + right.(string)
 		default:
 			return errors.New("")
 		}
@@ -191,3 +193,7 @@ func (n *ternaryNode) exec(ctx context.Context) any {
 	}
 	return n.ifFalse.exec(ctx)
 }
+
+type strNode struct{ val string }
+
+func (n *strNode) exec(_ context.Context) any { return n.val }

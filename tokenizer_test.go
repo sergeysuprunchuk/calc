@@ -124,6 +124,27 @@ func Test_readOperator(t *testing.T) {
 	}
 }
 
+func Test_readStr(t *testing.T) {
+	tests := []testRow{
+		tr(`"привет"`, token{strTyp, `привет`}, 8),
+		tr(`'мир'`, token{strTyp, `мир`}, 5),
+		tr(`"'привет'"`, token{strTyp, `'привет'`}, 10),
+		tr(`'"мир"'`, token{strTyp, `"мир"`}, 7),
+		tr(`"привет`, token{errTyp, `ожидалось "`}, 7),
+		tr(`'мир`, token{errTyp, `ожидалось '`}, 4),
+		tr(`"привет""привет"`, token{strTyp, `привет`}, 8),
+		tr(`'мир''мир'`, token{strTyp, `мир`}, 5),
+		tr(`"привет"'мир'`, token{strTyp, `привет`}, 8),
+		tr(`'мир'"привет"`, token{strTyp, `мир`}, 5),
+		tr(`"привет'`, token{errTyp, `ожидалось "`}, 8),
+		tr(`'мир"`, token{errTyp, `ожидалось '`}, 5),
+	}
+
+	for _, test := range tests {
+		test.check(t, test.tok.readStr())
+	}
+}
+
 func Test_read(t *testing.T) {
 	type item struct {
 		tok    token

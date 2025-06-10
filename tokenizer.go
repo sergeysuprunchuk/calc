@@ -62,6 +62,7 @@ const (
 	orTyp
 	questionTyp
 	colonTyp
+	strTyp
 )
 
 type token struct {
@@ -90,6 +91,7 @@ func (t *tokenizer) nextTok() (tok token) {
 	for _, r := range []reader{
 		t.readNum,
 		t.readOperator,
+		t.readStr,
 	} {
 		tok := r()
 		if tok.typ != emptyTyp {
@@ -98,6 +100,31 @@ func (t *tokenizer) nextTok() (tok token) {
 	}
 
 	return token{errTyp, "неизвестный символ " + string(t.char())}
+}
+
+func (t *tokenizer) readStr() token {
+	quote := t.char()
+
+	if quote != '"' && quote != '\'' {
+		return token{typ: emptyTyp}
+	}
+	var builder strings.Builder
+
+	for {
+		t.next()
+		if t.char() == quote {
+			t.next()
+			break
+		}
+
+		if t.char() == 0 {
+			return token{errTyp, "ожидалось " + string(quote)}
+		}
+
+		builder.WriteRune(t.char())
+	}
+
+	return token{strTyp, builder.String()}
 }
 
 func (t *tokenizer) readNum() token {
