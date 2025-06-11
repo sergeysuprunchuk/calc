@@ -145,6 +145,29 @@ func Test_readStr(t *testing.T) {
 	}
 }
 
+func Test_readIdent(t *testing.T) {
+	tests := []testRow{
+		tr("test", token{identTyp, "test"}, 4),
+		tr("test5", token{identTyp, "test5"}, 5),
+		tr("test_5", token{identTyp, "test_5"}, 6),
+		tr("_test_5", token{identTyp, "_test_5"}, 7),
+		tr("__test_5__", token{identTyp, "__test_5__"}, 10),
+		tr("5test", token{typ: emptyTyp}, 0),
+		tr("-5test", token{typ: emptyTyp}, 0),
+		tr("`test`", token{identTyp, "test"}, 6),
+		tr("`test5`", token{identTyp, "test5"}, 7),
+		tr("`test_5`", token{identTyp, "test_5"}, 8),
+		tr("`_test_5`", token{identTyp, "_test_5"}, 9),
+		tr("`__test_5__`", token{identTyp, "__test_5__"}, 12),
+		tr("`5test`", token{identTyp, "5test"}, 7),
+		tr("`-5test`", token{identTyp, "-5test"}, 8),
+	}
+
+	for _, test := range tests {
+		test.check(t, test.tok.readIdent())
+	}
+}
+
 func Test_read(t *testing.T) {
 	type item struct {
 		tok    token

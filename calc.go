@@ -1,11 +1,7 @@
 package calc
 
-import (
-	"context"
-)
-
-func Calc(program string) any {
+func Calc(program string, namespace Namespace) any {
 	return newParser(program).
 		parse().
-		exec(context.Background())
+		exec(namespace)
 }

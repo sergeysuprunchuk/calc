@@ -63,6 +63,7 @@ const (
 	questionTyp
 	colonTyp
 	strTyp
+	identTyp
 )
 
 type token struct {
@@ -92,6 +93,7 @@ func (t *tokenizer) nextTok() (tok token) {
 		t.readNum,
 		t.readOperator,
 		t.readStr,
+		t.readIdent,
 	} {
 		tok := r()
 		if tok.typ != emptyTyp {
@@ -164,6 +166,42 @@ func (t *tokenizer) readNum() token {
 	}
 
 	return token{numTyp, val.String()}
+}
+
+func (t *tokenizer) readIdent() token {
+	if t.char() == '`' {
+		t.next()
+
+		var builder strings.Builder
+		for {
+			if t.char() == '`' {
+				t.next()
+				return token{identTyp, builder.String()}
+			}
+
+			if t.char() == 0 {
+				return token{errTyp, ""}
+			}
+
+			builder.WriteRune(t.char())
+			t.next()
+		}
+	}
+
+	if t.char() == '_' || unicode.IsLetter(t.char()) {
+		var builder strings.Builder
+		for {
+			if t.char() == '_' || unicode.IsLetter(t.char()) || unicode.IsDigit(t.char()) {
+				builder.WriteRune(t.char())
+				t.next()
+				continue
+			}
+			break
+		}
+		return token{identTyp, builder.String()}
+	}
+
+	return token{typ: emptyTyp}
 }
 
 func (t *tokenizer) readOperator() token {

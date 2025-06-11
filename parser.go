@@ -56,6 +56,11 @@ func (p *parser) parse0() node {
 		return &strNode{tok.val}
 	}
 
+	if tok.typ == identTyp {
+		p.tok.nextTok()
+		return &identNode{tok.val}
+	}
+
 	if tok.typ == lParenTyp {
 		p.tok.nextTok()
 		//parse с самым низким приоритетом

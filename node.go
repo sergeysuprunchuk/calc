@@ -1,17 +1,20 @@
 package calc
 
 import (
-	"context"
 	"errors"
 	"math"
 	"reflect"
 )
 
-type node interface{ exec(ctx context.Context) any }
+type Namespace interface {
+	Get(key string) (any, bool)
+}
+
+type node interface{ exec(namespace Namespace) any }
 
 type numNode struct{ val float64 }
 
-func (n *numNode) exec(_ context.Context) any { return n.val }
+func (n *numNode) exec(_ Namespace) any { return n.val }
 
 const (
 	addOp uint8 = iota + 1
@@ -34,8 +37,8 @@ type unaryNode struct {
 	val node
 }
 
-func (n *unaryNode) exec(ctx context.Context) any {
-	val := n.val.exec(ctx)
+func (n *unaryNode) exec(namespace Namespace) any {
+	val := n.val.exec(namespace)
 	if _, ok := val.(error); ok {
 		return val
 	}
@@ -58,13 +61,13 @@ type binaryNode struct {
 	right node
 }
 
-func (n *binaryNode) exec(ctx context.Context) any {
-	left := n.left.exec(ctx)
+func (n *binaryNode) exec(namespace Namespace) any {
+	left := n.left.exec(namespace)
 	if _, ok := left.(error); ok {
 		return left
 	}
 
-	right := n.right.exec(ctx)
+	right := n.right.exec(namespace)
 	if _, ok := right.(error); ok {
 		return right
 	}
@@ -80,6 +83,8 @@ func (n *binaryNode) exec(ctx context.Context) any {
 			return left.(float64) == right.(float64)
 		case bool:
 			return left.(bool) == right.(bool)
+		case string:
+			return left.(string) == right.(string)
 		default:
 			return errors.New("")
 		}
@@ -89,6 +94,8 @@ func (n *binaryNode) exec(ctx context.Context) any {
 			return left.(float64) != right.(float64)
 		case bool:
 			return left.(bool) != right.(bool)
+		case string:
+			return left.(string) != right.(string)
 		default:
 			return errors.New("")
 		}
@@ -96,6 +103,8 @@ func (n *binaryNode) exec(ctx context.Context) any {
 		switch left.(type) {
 		case float64:
 			return left.(float64) < right.(float64)
+		case string:
+			return left.(string) < right.(string)
 		default:
 			return errors.New("")
 		}
@@ -103,6 +112,8 @@ func (n *binaryNode) exec(ctx context.Context) any {
 		switch left.(type) {
 		case float64:
 			return left.(float64) <= right.(float64)
+		case string:
+			return left.(string) <= right.(string)
 		default:
 			return errors.New("")
 		}
@@ -110,6 +121,8 @@ func (n *binaryNode) exec(ctx context.Context) any {
 		switch left.(type) {
 		case float64:
 			return left.(float64) > right.(float64)
+		case string:
+			return left.(string) > right.(string)
 		default:
 			return errors.New("")
 		}
@@ -117,6 +130,8 @@ func (n *binaryNode) exec(ctx context.Context) any {
 		switch left.(type) {
 		case float64:
 			return left.(float64) >= right.(float64)
+		case string:
+			return left.(string) >= right.(string)
 		default:
 			return errors.New("")
 		}
@@ -165,7 +180,7 @@ func (n *binaryNode) exec(ctx context.Context) any {
 
 type errNode struct{ err error }
 
-func (n *errNode) exec(_ context.Context) any { return n.err }
+func (n *errNode) exec(_ Namespace) any { return n.err }
 
 func isErr(n node) bool {
 	_, ok := n.(*errNode)
@@ -178,8 +193,8 @@ type ternaryNode struct {
 	ifFalse node
 }
 
-func (n *ternaryNode) exec(ctx context.Context) any {
-	cond := n.cond.exec(ctx)
+func (n *ternaryNode) exec(namespace Namespace) any {
+	cond := n.cond.exec(namespace)
 	if _, ok := cond.(error); ok {
 		return cond
 	}
@@ -189,11 +204,46 @@ func (n *ternaryNode) exec(ctx context.Context) any {
 	}
 
 	if cond.(bool) {
-		return n.ifTrue.exec(ctx)
+		return n.ifTrue.exec(namespace)
 	}
-	return n.ifFalse.exec(ctx)
+	return n.ifFalse.exec(namespace)
 }
 
 type strNode struct{ val string }
 
-func (n *strNode) exec(_ context.Context) any { return n.val }
+func (n *strNode) exec(_ Namespace) any { return n.val }
+
+type identNode struct{ val string }
+
+func (n *identNode) exec(namespace Namespace) any {
+	val, ok := namespace.Get(n.val)
+	if !ok {
+		return errors.New("")
+	}
+	switch v := val.(type) {
+	case int:
+		val = float64(v)
+	case int8:
+		val = float64(v)
+	case int16:
+		val = float64(v)
+	case int32:
+		val = float64(v)
+	case int64:
+		val = float64(v)
+	case uint:
+		val = float64(v)
+	case uint8:
+		val = float64(v)
+	case uint16:
+		val = float64(v)
+	case uint32:
+		val = float64(v)
+	case uint64:
+		val = float64(v)
+	case float32:
+		val = float64(v)
+	}
+
+	return val
+}

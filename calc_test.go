@@ -5,6 +5,19 @@ import (
 	"testing"
 )
 
+type namespace map[string]any
+
+func (n namespace) Get(key string) (any, bool) {
+	val, ok := n[key]
+	return val, ok
+}
+
+var base = namespace{
+	"name":     "tyson",
+	"age":      32,
+	"is_admin": true,
+}
+
 func Test_Calc(t *testing.T) {
 	tests := []struct {
 		program  string
@@ -714,13 +727,37 @@ func Test_Calc(t *testing.T) {
 		{"16 > 9 ? 32 : (8 > 3 ? (25 >= 15 ? 4 : 81) : (27 < 64 ? (5 > 2 ? 20 : 2) : 3))", 32.},
 		{`16 > 9 ? "16 > 9" : "16 <= 9"`, `16 > 9`},
 		{`"привет " + 'мир'`, `привет мир`},
+		{`name == "tyson" ? "привет tyson" : "кто ты?"`, "привет tyson"},
+		{`name == "paul" ? "привет paul" : "кто ты " + name + "?"`, "кто ты tyson?"},
+		{`age >= 18 ? "взрослый" : "несовершеннолетний"`, "взрослый"},
+		{`is_admin ? name + " админ" : "кто?"`, "tyson админ"},
+		{`"привет" == 'привет'`, true},
+		{`"привет" != 'привет'`, false},
+		{`"привет" == 'мир'`, false},
+		{`"привет" != 'мир'`, true},
+		{`"привет" < 'мир'`, false},
+		{`"привет" <= 'мир'`, false},
+		{`"привет" > 'мир'`, true},
+		{`"привет" >= 'мир'`, true},
+		{`"привет" > 'привет'`, false},
+		{`"привет" >= 'привет'`, true},
+		{"age + age", 64.},
+		{"age - age", 0.},
+		{"age * 2", 64.},
+		{"age / age", 1.},
+		{"age ** 2", 1024.},
 	}
 
 	for _, test := range tests {
-		val := Calc(test.program)
+		val := Calc(test.program, base)
 
 		if !reflect.DeepEqual(val, test.expected) {
 			t.Errorf("%s: got %v, want %v", test.program, val, test.expected)
 		}
 	}
 }
+
+/*
+select expr, expr, ... from " http | file " where expr(bool) and expr(bool) ... group by ident, ident
+having (group by field) | (agg(ident) order by ident, ident desc | asc limit n offset n;
+*/

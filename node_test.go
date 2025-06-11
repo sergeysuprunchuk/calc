@@ -1,7 +1,6 @@
 package calc
 
 import (
-	"context"
 	"reflect"
 	"testing"
 )
@@ -140,7 +139,7 @@ func Test_node(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		val := test.n.exec(context.Background())
+		val := test.n.exec(nil)
 		if !reflect.DeepEqual(val, test.expected) {
 			t.Errorf("got %v, want %v", val, test.expected)
 		}
